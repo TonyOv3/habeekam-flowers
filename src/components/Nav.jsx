@@ -1,18 +1,28 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShoppingCart } from 'lucide-react';
 
 export default function Nav({ cartLength, setIsCartOpen }) {
+    const [isScrolled, setIsScrolled] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 50);
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
     return (
-        <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] w-[95%] max-w-6xl animate-fade-in-down">
-            <div className="bg-white/95 backdrop-blur-md border border-slate-100 px-8 py-4 rounded-full shadow-2xl flex justify-between items-center">
-                <div className="flex items-center gap-3 cursor-pointer group" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                    {/* HF MONOGRAM SIMULATION */}
-                    <div className="w-12 h-12 bg-black text-white rounded-full flex items-center justify-center font-serif font-black text-xl tracking-tighter border-4 border-rose-600">
+        <nav className={`fixed top-0 left-0 w-full z-[100] transition-all duration-500 ease-in-out px-4 md:px-6 pt-4 md:pt-6 ${isScrolled ? "-translate-y-full opacity-0 pointer-events-none" : "translate-y-0 opacity-100"}`}>
+            <div className="max-w-6xl mx-auto bg-white/95 backdrop-blur-md border border-slate-100 px-6 md:px-8 py-3 md:py-4 rounded-full shadow-2xl flex justify-between items-center">
+                <div className="flex items-center gap-2 md:gap-3 cursor-pointer group" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+                    {/* HF MONOGRAM */}
+                    <div className="w-10 h-10 md:w-12 md:h-12 bg-black text-white rounded-full flex items-center justify-center font-serif font-black text-lg md:text-xl tracking-tighter border-[3px] md:border-4 border-rose-600 shrink-0">
                         HF
                     </div>
                     <div className="hidden sm:flex flex-col">
-                        <span className="text-xl font-black tracking-tight text-slate-900 uppercase">HABEEKAM</span>
-                        <span className="text-[9px] tracking-[0.3em] uppercase text-rose-600 font-bold">Lagos • Nigeria</span>
+                        <span className="text-lg md:text-xl font-black tracking-tight text-slate-900 uppercase">HABEEKAM</span>
+                        <span className="text-[8px] md:text-[9px] tracking-[0.3em] uppercase text-rose-600 font-bold">Lagos • Nigeria</span>
                     </div>
                 </div>
 
@@ -25,7 +35,7 @@ export default function Nav({ cartLength, setIsCartOpen }) {
                     ))}
                 </div>
 
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-3 md:space-x-4">
                     <button onClick={() => setIsCartOpen(true)} className="relative p-2 group bg-slate-50 rounded-full hover:bg-black hover:text-white transition-colors">
                         <ShoppingCart className="w-5 h-5 group-hover:scale-110 transition-transform" />
                         {cartLength > 0 && (
@@ -34,7 +44,7 @@ export default function Nav({ cartLength, setIsCartOpen }) {
                             </span>
                         )}
                     </button>
-                    <a href="#shop" className="bg-black text-white text-[11px] font-black uppercase tracking-widest px-8 py-3 rounded-full hover:bg-rose-600 transition-all duration-500 shadow-xl hidden sm:block">
+                    <a href="#shop" className="bg-black text-white text-[10px] md:text-[11px] font-black uppercase tracking-widest px-6 md:px-8 py-2 md:py-3 rounded-full hover:bg-rose-600 transition-all duration-500 shadow-xl hidden sm:block whitespace-nowrap">
                         Shop Now
                     </a>
                 </div>

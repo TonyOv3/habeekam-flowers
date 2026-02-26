@@ -20,7 +20,7 @@ export const PRODUCTS = [
         price: 150000,
         category: "Money Bouquets",
         // Large bouquet of red roses simulating money bouquet volume
-        image: "https://images.unsplash.com/photo-1596436096528-936657962eb0?auto=format&fit=crop&q=80&w=800",
+        image: "/images/money_bouquet.png",
         rating: 5,
         tag: "Trending"
     },
@@ -30,7 +30,7 @@ export const PRODUCTS = [
         price: 95000,
         category: "Gift Combos",
         // Teddy, Wine, and Flowers setup
-        image: "https://images.unsplash.com/photo-1582236873926-e24f4699320d?auto=format&fit=crop&q=80&w=800",
+        image: "/images/romance_combo.png",
         rating: 5,
         tag: "Best Value"
     },
@@ -40,7 +40,7 @@ export const PRODUCTS = [
         price: 45000,
         category: "Fresh Flowers",
         // Dense red roses in box
-        image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=800",
+        image: "/images/midnight_rose_box.png",
         rating: 5,
         tag: "Signature"
     },
@@ -50,7 +50,7 @@ export const PRODUCTS = [
         price: 85000,
         category: "Wine Gifts",
         // Champagne bottle lifestyle
-        image: "https://images.unsplash.com/photo-1599839619722-39751411ea63?auto=format&fit=crop&q=80&w=800",
+        image: "/images/veuve_roses.png",
         rating: 5,
         tag: "Luxury Pairing"
     },
@@ -60,7 +60,7 @@ export const PRODUCTS = [
         price: 65000,
         category: "Teddy Bears",
         // Large Teddy
-        image: "https://images.unsplash.com/photo-1559454403-b8fb88521f11?auto=format&fit=crop&q=80&w=800",
+        image: "/images/teddy_bear.png",
         rating: 4.9,
         tag: "Wow Factor"
     },
@@ -70,7 +70,7 @@ export const PRODUCTS = [
         price: 55000,
         category: "Gift Boxes",
         // Gift box / Basket vibe
-        image: "https://images.unsplash.com/photo-1606210123992-0f5de4b20a8d?auto=format&fit=crop&q=80&w=800",
+        image: "/images/celebration_hamper.png",
         rating: 4.8,
         tag: "Corporate"
     },
