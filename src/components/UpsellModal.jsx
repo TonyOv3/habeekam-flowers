@@ -14,14 +14,14 @@ export default function UpsellModal({ upsellItem, setUpsellItem, setIsCartOpen }
                 </div>
                 <h3 className="text-2xl md:text-3xl font-black text-slate-900 mb-3 md:mb-4 leading-tight">Don't Forget <br /> The Extras!</h3>
                 <p className="text-slate-500 mb-8 md:mb-10 text-xs md:text-sm leading-relaxed">
-                    Customers who bought <span className="font-bold text-black">{upsellItem.name}</span> usually add a bottle of wine or a teddy bear.
+                    Customers who bought <span className="font-bold text-black">{upsellItem.name}</span> highly recommend adding the <span className="font-bold text-rose-600">Veuve Clicquot & Roses</span> pairing.
                 </p>
                 <div className="flex flex-col gap-3 md:gap-4">
                     <button
                         onClick={() => { setUpsellItem(null); setIsCartOpen(true); }}
                         className="w-full bg-black text-white py-4 md:py-5 rounded-2xl font-black text-[10px] md:text-xs uppercase tracking-widest hover:bg-rose-600 transition-colors"
                     >
-                        View Combos
+                        View Luxury Pairings
                     </button>
                     <button onClick={() => setUpsellItem(null)} className="text-slate-400 text-[10px] md:text-xs font-bold uppercase tracking-widest hover:text-black">
                         No, thanks

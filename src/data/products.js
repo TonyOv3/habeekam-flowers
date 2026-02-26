@@ -50,7 +50,7 @@ export const PRODUCTS = [
         price: 85000,
         category: "Wine Gifts",
         // Champagne bottle lifestyle
-        image: "https://images.unsplash.com/photo-1620987278429-ca17826dfb8c?auto=format&fit=crop&q=80&w=800",
+        image: "https://images.unsplash.com/photo-1599839619722-39751411ea63?auto=format&fit=crop&q=80&w=800",
         rating: 5,
         tag: "Luxury Pairing"
     },

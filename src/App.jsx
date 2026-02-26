@@ -59,6 +59,10 @@ export default function App() {
     setIsProcessingCheckout(true);
 
     try {
+      // Calculate derived totals
+      const vatAmount = subtotal * 0.075;
+      const totalDue = subtotal + vatAmount;
+
       // 1. Prepare Order Data structure
       const orderData = {
         items: cart.map(item => ({
@@ -68,9 +72,11 @@ export default function App() {
           quantity: item.quantity,
           category: item.category
         })),
-        totalAmount: subtotal,
+        subtotal: subtotal,
+        vat: vatAmount,
+        total_due: totalDue,
         orderDate: new Date().toISOString(),
-        status: 'pending' // pending until WhatsApp confirmation
+        status: 'awaiting_transfer' // Wait for bank transfer confirmation
       };
 
       // 2. Save to Firebase 
@@ -83,7 +89,7 @@ export default function App() {
       }
 
       const itemsText = cart.map(i => `• ${i.name} (x${i.quantity}) - ₦${(i.price * i.quantity).toLocaleString()}`).join('%0A');
-      const message = `*NEW ORDER - ${BRAND.name}*${uniqueOrderRef}%0A%0A*Items:*%0A${itemsText}%0A%0A*TOTAL: ₦${subtotal.toLocaleString()}*%0A%0AHello! I'd like to confirm this order. Please send account details for payment.`;
+      const message = `*NEW ORDER - ${BRAND.name}*${uniqueOrderRef}%0A%0A*Items:*%0A${itemsText}%0A%0A*Subtotal:* ₦${subtotal.toLocaleString()}%0A*VAT (7.5%):* ₦${vatAmount.toLocaleString()}%0A*TOTAL DUE: ₦${totalDue.toLocaleString()}*%0A%0APlease send the account details for bank transfer so I can confirm my order${firebaseOrderId ? ` for HF-${firebaseOrderId.substring(0, 6).toUpperCase()}` : ''}.`;
 
       // 4. Redirect to WhatsApp
       window.open(`https://wa.me/${BRAND.phone}?text=${message}`, '_blank');
@@ -125,8 +131,8 @@ export default function App() {
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
                 className={`px-6 py-2 md:px-8 md:py-3 rounded-full text-[10px] md:text-[11px] font-black uppercase tracking-[0.1em] transition-all duration-300 border-2 whitespace-nowrap ${activeCategory === cat
-                    ? "bg-black text-white border-black shadow-xl"
-                    : "bg-transparent border-slate-100 text-slate-400 hover:border-black hover:text-black"
+                  ? "bg-black text-white border-black shadow-xl"
+                  : "bg-transparent border-slate-100 text-slate-400 hover:border-black hover:text-black"
                   }`}
               >
                 {cat}
