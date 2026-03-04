@@ -8,7 +8,7 @@ import Cart from './components/Cart';
 import UpsellModal from './components/UpsellModal';
 
 import { PRODUCTS, BRAND } from './data/products';
-import { saveOrderToFirebase } from './firebase';
+import { supabase } from './supabase';
 
 export default function App() {
   const [cart, setCart] = useState([]);
@@ -17,18 +17,45 @@ export default function App() {
   const [upsellItem, setUpsellItem] = useState(null);
   const [isMounted, setIsMounted] = useState(false);
   const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
+  const [products, setProducts] = useState([]);
 
   useEffect(() => {
     setIsMounted(true);
+    fetchProducts();
   }, []);
 
-  const categories = useMemo(() => ["All", ...new Set(PRODUCTS.map(p => p.category))], []);
+  const fetchProducts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('is_active', true);
+
+      if (error) {
+        console.warn('Supabase fetch failed, falling back to static products:', error.message);
+        setProducts(PRODUCTS);
+      } else if (data && data.length > 0) {
+        const formattedProducts = data.map(p => ({
+          ...p,
+          image: p.image_url
+        }));
+        setProducts(formattedProducts);
+      } else {
+        setProducts(PRODUCTS);
+      }
+    } catch (err) {
+      console.warn('Network error, falling back to static products:', err);
+      setProducts(PRODUCTS);
+    }
+  };
+
+  const categories = useMemo(() => ["All", ...new Set(products.map(p => p.category))], [products]);
 
   const filteredProducts = useMemo(() => {
     return activeCategory === "All"
-      ? PRODUCTS
-      : PRODUCTS.filter(p => p.category === activeCategory);
-  }, [activeCategory]);
+      ? products
+      : products.filter(p => p.category === activeCategory);
+  }, [activeCategory, products]);
 
   const addToCart = (product) => {
     setCart(prev => {
@@ -79,17 +106,40 @@ export default function App() {
         status: 'awaiting_transfer' // Wait for bank transfer confirmation
       };
 
-      // 2. Save to Firebase 
-      const firebaseOrderId = await saveOrderToFirebase(orderData);
+      // 2. Save to Supabase (Non-blocking fallback)
+      const generateOrderId = () => 'HF-' + Math.floor(1000 + Math.random() * 9000).toString();
+      const newOrderId = generateOrderId();
 
-      // 3. Prepare texts for WhatsApp
-      let uniqueOrderRef = '';
-      if (firebaseOrderId) {
-        uniqueOrderRef = `%0A*Order Ref:* HF-${firebaseOrderId.substring(0, 6).toUpperCase()}`;
+      try {
+        const { error } = await supabase
+          .from('orders')
+          .insert([
+            {
+              id: newOrderId,
+              total_amount: totalDue,
+              items: cart.map(item => ({
+                id: item.id,
+                name: item.name,
+                price: item.price,
+                quantity: item.quantity,
+                category: item.category
+              })),
+              status: 'pending'
+            }
+          ]);
+
+        if (error) {
+          console.warn("Supabase order insert failed (tables may not exist yet):", error.message);
+        }
+      } catch (insertError) {
+        console.warn("Failed to reach Supabase for order insert:", insertError);
       }
 
+      // 3. Prepare texts for WhatsApp
+      let uniqueOrderRef = `%0A*Order Ref:* ${newOrderId}`;
+
       const itemsText = cart.map(i => `• ${i.name} (x${i.quantity}) - ₦${(i.price * i.quantity).toLocaleString()}`).join('%0A');
-      const message = `*NEW ORDER - ${BRAND.name}*${uniqueOrderRef}%0A%0A*Items:*%0A${itemsText}%0A%0A*Subtotal:* ₦${subtotal.toLocaleString()}%0A*VAT (7.5%):* ₦${vatAmount.toLocaleString()}%0A*TOTAL DUE: ₦${totalDue.toLocaleString()}*%0A%0APlease send the account details for bank transfer so I can confirm my order${firebaseOrderId ? ` for HF-${firebaseOrderId.substring(0, 6).toUpperCase()}` : ''}.`;
+      const message = `*NEW ORDER - ${BRAND.name}*${uniqueOrderRef}%0A%0A*Items:*%0A${itemsText}%0A%0A*Subtotal:* ₦${subtotal.toLocaleString()}%0A*VAT (7.5%):* ₦${vatAmount.toLocaleString()}%0A*TOTAL DUE: ₦${totalDue.toLocaleString()}*%0A%0APlease send the account details for bank transfer so I can confirm my order for ${newOrderId}.`;
 
       // 4. Redirect to WhatsApp
       window.open(`https://wa.me/${BRAND.phone}?text=${message}`, '_blank');
@@ -125,19 +175,23 @@ export default function App() {
           </div>
 
           {/* Scrollable Categories on Mobile */}
-          <div className="flex overflow-x-auto pb-4 md:pb-0 gap-3 md:flex-wrap hide-scrollbar -mx-6 px-6 md:mx-0 md:px-0">
-            {categories.map(cat => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`px-6 py-2 md:px-8 md:py-3 rounded-full text-[10px] md:text-[11px] font-black uppercase tracking-[0.1em] transition-all duration-300 border-2 whitespace-nowrap ${activeCategory === cat
-                  ? "bg-black text-white border-black shadow-xl"
-                  : "bg-transparent border-slate-100 text-slate-400 hover:border-black hover:text-black"
-                  }`}
-              >
-                {cat}
-              </button>
-            ))}
+          <div className="relative w-full">
+            <div className="flex overflow-x-auto gap-3 pb-4 no-scrollbar snap-x">
+              {categories.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  className={`shrink-0 snap-start px-8 py-3 rounded-full text-[11px] font-black uppercase tracking-[0.1em] transition-all duration-300 border-2 ${activeCategory === cat
+                    ? "bg-black text-white border-black shadow-xl"
+                    : "bg-transparent border-slate-100 text-slate-400 hover:border-black hover:text-black"
+                    }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+            {/* Subtle white fade on the right side */}
+            <div className="absolute top-0 right-0 h-full w-16 bg-gradient-to-l from-white to-transparent pointer-events-none"></div>
           </div>
         </div>
 
@@ -180,6 +234,13 @@ export default function App() {
           display: none;
         }
         .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
           -ms-overflow-style: none;
           scrollbar-width: none;
         }
